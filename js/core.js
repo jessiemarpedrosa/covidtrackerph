@@ -1,5 +1,6 @@
-var apiURL = 'https://coronavirus-ph-api.herokuapp.com';
-var data;
+let apiURL = 'https://coronavirus-ph-api.herokuapp.com';
+let dohDataGoogle = 'https://spreadsheets.google.com/feeds/list/16g_PUxKYMC0XjeEKF6FPUBq2-pFgmTkHoj5lbVrGLhE/oswqc7n/public/values?alt=json';
+let data;
 
 function getTotalCases() {	
 	$.getJSON( apiURL + '/total', function (d) {
@@ -40,14 +41,14 @@ info.onAdd = function (map) {
 
 info.update = function (props) {
 	this._div.innerHTML = '<h5>Mandaue City - Covid Map Tracker</h5>' + (props ?
-		'<p class="mb-2">' + props.name + '</p>' + props.density + ' people</sup>'
+		'<p class="mb-2">' + props.name + '</p>' + props.cases + ' people</sup>'
 		: 'Hover over a barangay');
 };
 
 info.addTo(map);
 
 
-// get color depending on population density value
+// get color depending on population cases value
 function getColor(d) {
 	return  d > 25000 ? '#800026' :
 			d > 20000  ? '#BD0026' :
@@ -56,7 +57,7 @@ function getColor(d) {
 			d > 8000   ? '#FD8D3C' :
 			d > 5000   ? '#FEB24C' :
 			d > 1000   ? '#FED976' :
-						'#FFEDA0';
+						'#FFFFFF';
 }
 
 function style(feature) {
@@ -66,7 +67,7 @@ function style(feature) {
 		color: 'white',
 		dashArray: '3',
 		fillOpacity: 0.7,
-		fillColor: getColor(feature.properties.density)
+		fillColor: getColor(feature.properties.cases)
 	};
 }
 
@@ -175,22 +176,24 @@ $.getJSON( apiURL + '/total', function (data) {
 $.getJSON( apiURL + '/doh-data-drop', function (data) {
 
 	var data = data.data;
-	var mandaue = "Mandaue City";
-	var cebu = "Cebu City (Capital)";
-	var talisay = "City of Talisay";
+	var mandaue = new RegExp("mandaue");
+	var cebu = new RegExp("cebu");
+	var talisay = new RegExp("talisay");
 	var mandaueCases = 0, cebuCases = 0, talisayCases = 0;
 	
 	$.each(data, function(i, item) {
-		if ( item.prov_city_res.toLowerCase() === mandaue.toLowerCase() ){ mandaueCases++; }
-		if ( item.prov_city_res.toLowerCase() === cebu.toLowerCase() ){ cebuCases++; }
-		if ( item.prov_city_res.toLowerCase() === talisay.toLowerCase() ){ talisayCases++; }
+		
+		var provCity = item.prov_city_res.toLowerCase();
+		
+		if ( mandaue.test(provCity) ){ mandaueCases++; }
+		if ( cebu.test(provCity) ){ cebuCases++; }
+		if ( talisay.test(provCity) ){ talisayCases++; }
+				
 	});
 	
 	$('.mandaueCases').append( mandaueCases );
 	$('.cebuCases').append( cebuCases );
 	$('.talisayCases').append( talisayCases );
-	
-	console.log(data);
 	
 });
 
